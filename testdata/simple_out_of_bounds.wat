@@ -47,13 +47,13 @@
 
     ;;(local $pointer i32)
     ;;(local.set $pointer (i32.const 65536))
-    (call $ext_allocator_malloc_version_1 (i32.const 1))
+    ;;(call $ext_allocator_malloc_version_1 (i32.const 1))
     ;;(local.set $pointer)
 
     ;;drop
     ;;(i32.store (local.get $pointer) (i32.const 2147483648))
     ;;(i32.load (local.get $pointer))
-    ;;(local.get $memoffset)
+    (local.get $memoffset)
     return
   )
 )
