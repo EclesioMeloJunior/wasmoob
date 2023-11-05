@@ -9,19 +9,23 @@
 
 
   (func (export "out_of_bounds") (result i32) ;; Export a function to cause the error
+    (local $begining i32)
     (local $memoffset i32)
     (local $counter i32)
 
-    (i32.const 0)
-    (local.tee $counter) ;; start counter at 0
-    (local.set $memoffset) ;; start memoffset at 0
+    (local.set $counter (i32.const 0)) ;; start counter at 0
+    
+    (local.set $memoffset (call $ext_allocator_malloc_version_1 (i32.const 65536)))
+    (local.set $begining (local.get $memoffset))
 
     (block
       (loop
         
         ;; loop condition check
         (local.get $counter)
-        (i32.const 16384) ;; loop until
+        ;; loop until 
+        ;; this will fill all the available data allocated for this pointer 65536
+        (i32.const 16384)  
         (i32.ge_u)
         (br_if 1) ;; break if $counter >= 10
 
@@ -44,16 +48,7 @@
       )
     )
 
-
-    ;;(local $pointer i32)
-    ;;(local.set $pointer (i32.const 65536))
-    ;;(call $ext_allocator_malloc_version_1 (i32.const 1))
-    ;;(local.set $pointer)
-
-    ;;drop
-    ;;(i32.store (local.get $pointer) (i32.const 2147483648))
-    ;;(i32.load (local.get $pointer))
-    (local.get $memoffset)
+    (local.get $begining)
     return
   )
 )

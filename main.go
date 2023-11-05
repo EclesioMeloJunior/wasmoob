@@ -3,7 +3,6 @@ package main
 import (
 	"context"
 	_ "embed"
-	"encoding/binary"
 	"fmt"
 	"log"
 
@@ -61,16 +60,17 @@ func main() {
 
 	fmt.Printf("mem: \n\theap base: %d\n\tmem size: %d\n", hb, mem.Size())
 
+	substrateAlloc := NewSubstrateAllocator(hb)
 	allocator := NewAllocator(mem, hb)
 
-	manager := &RuntimeManager{mod, allocator}
+	manager := &RuntimeManager{mod, allocator, substrateAlloc}
 	runtimeCtx := context.WithValue(context.Background(), runtimeContextKey, manager)
 
 	// Call the `add` function and print the results to the console.
 	oob := manager.mod.ExportedFunction("out_of_bounds")
 	result, err := oob.Call(runtimeCtx)
 	if err != nil {
-		fmt.Println(err)
+		panic(err)
 	}
 
 	fmt.Println(result)
@@ -81,14 +81,13 @@ func main() {
 	}
 
 	values := make([]uint32, 0)
-	for i := 0; true; i += 4 {
-		byteEncodedValue, ok := mem.Read(uint32(i), 4)
+	for i := uint32(result[0]); true; i += 4 {
+		value, ok := mem.ReadUint32Le(i)
 		if !ok {
-			fmt.Printf("idx: %d encoded bytes len: %d\n", i, len(byteEncodedValue))
+			fmt.Printf("cannot read uint32_le, idx: %d\n", i)
 			break
 		}
 
-		value := binary.LittleEndian.Uint32(byteEncodedValue)
 		if value != 9090 {
 			fmt.Printf("stopped at idx: %d\n", i)
 			break

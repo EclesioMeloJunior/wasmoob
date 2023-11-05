@@ -7,10 +7,16 @@ import (
 )
 
 func ext_allocator_malloc_version_1(ctx context.Context, _ api.Module, size uint32) uint32 {
-	allocator := ctx.Value(runtimeContextKey).(*RuntimeManager).allocator
+	manager := ctx.Value(runtimeContextKey).(*RuntimeManager)
 
-	// Allocate memory
-	res, err := allocator.Allocate(size)
+	// using gossamer allocator
+	// res, err := manager.allocator.Allocate(size)
+	// if err != nil {
+	// 	panic(err)
+	// }
+
+	// using substrate allocator
+	res, err := manager.substrateAlloc.Allocate(manager.mod.Memory(), size)
 	if err != nil {
 		panic(err)
 	}

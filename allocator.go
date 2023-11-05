@@ -18,7 +18,7 @@ const HeadsQty = 23
 // MaxPossibleAllocation 2^25 bytes, 32 MiB
 const MaxPossibleAllocation = (1 << 25)
 
-const PageSize = 0x10000
+const PageSize = 65536
 
 type freeingBumpHeapAllocator struct {
 	bumper      uint32
@@ -87,8 +87,10 @@ func (fbha *freeingBumpHeapAllocator) Allocate(size uint32) (uint32, error) {
 	} else {
 		// Nothing te be freed. Bump.
 		ptr = fbha.bump(itemSize+8) + 8
-		fmt.Printf("bumping: ptr = %d", ptr)
+		fmt.Printf("bumping: ptr = %d\n", ptr)
 	}
+
+	fmt.Printf("fbha.maxHeapSize: %d\n", fbha.maxHeapSize)
 
 	if (ptr + itemSize + fbha.ptrOffset) > fbha.maxHeapSize {
 		pagesNeeded := (ptr + itemSize + fbha.ptrOffset - fbha.maxHeapSize) / PageSize
